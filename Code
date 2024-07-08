@@ -1,0 +1,101 @@
+import pandas as pd
+from pandas import DataFrame
+
+Badminton =  pd.read_excel(r"C:\Users\jaggi\Downloads\Hallabol'24\Badminton.xlsx")
+Cricket =   pd.read_excel(r"C:\Users\jaggi\Downloads\Hallabol'24\Cricket.xlsx")
+Khokho =  pd.read_excel(r"C:\Users\jaggi\Downloads\Hallabol'24\Khokho.xlsx")
+Futsal =  pd.read_excel(r"C:\Users\jaggi\Downloads\Hallabol'24\Futsal.xlsx")
+Footvolley =  pd.read_excel(r"C:\Users\jaggi\Downloads\Hallabol'24\Footvolley.xlsx")
+#print(Badminton)
+display(Badminton)
+
+list_title=    ['Team Leader Roll Number','Team Member 2 Roll Number','Team Member 3 Roll Number','Team Member 4 Roll Number',
+                'Team Member 5 Roll Number','Team Member 6 Roll Number','Team Member 7 Roll Number','Team Member 8 Roll Number',
+                'Team Member 9 Roll Number']
+
+
+gamestobeplayed=[Cricket,Khokho,Futsal,Footvolley,Badminton] #all excel of games
+games_name=[ "Cricket",'Khokho','Futsal','Footvolley','Badminton'] #name for game corresponding to excel
+
+
+list_teammebers=[7,9,7,6,4]
+# get each sports info - student dictionary -> total teams, unique participants
+# total participants
+Total_student_dictionary = {}
+print("Game Name"," : ", "Number of participants ", ",",  "number of teams participated")
+for i in range(len(gamestobeplayed)):
+  Student_dictionary = {}
+  j=list_teammebers[i]
+  for k in range(j):
+    for l in gamestobeplayed[i][list_title[k]]:
+      if l not in Student_dictionary:
+        Student_dictionary[l]=[]
+  j=list_teammebers[i]
+  for k in range(j):
+    for l in gamestobeplayed[i][list_title[k]]:
+      if l not in Total_student_dictionary:
+        Total_student_dictionary[l]=[]
+  print(games_name[i]," : ", len(Student_dictionary),",", len(Student_dictionary)//list_teammebers[i])
+print(len(Total_student_dictionary))
+print(Student_dictionary)
+print(Total_student_dictionary)
+# print(len(Futsal))
+time_slot = [45,45,30,30,30] #list
+game_upper_bound = [9,9,7,9,12] #list
+
+df = DataFrame({'Team1': ["A"], 'Captain1':["A"], ' ':["vs"],'Captain2':["A"], 'Team2': ["A"], 'Time':["A"],'Game':["A"]})
+for game_number in range(len(gamestobeplayed)):
+    game = gamestobeplayed[game_number]
+    print(games_name[game_number])
+    
+    slots = []
+    start = 0
+    end = time_slot[game_number]
+    for i in range(20):
+        l=[]
+        l.append(start)
+        l.append(end)
+        slots.append(l)
+        start += time_slot[game_number]
+        end += time_slot[game_number]
+    
+    start = 0
+    end = time_slot[game_number]
+    teamcheck = []
+    for i in range(game_upper_bound[game_number]*2):
+        teamcheck.append(0)
+    for slot in slots:
+        for i in range(game_upper_bound[game_number]):
+            team1 = 2*i
+            team2 = 2*i + 1
+            if teamcheck[team1]==1:
+                continue
+            flag = 0
+            for teammembers in range((list_teammebers[game_number])):
+                player = game[list_title[teammembers]][team1]
+                for k in Total_student_dictionary[player]:
+                    if k[1] > slot[0] and k[0] < slot[1]:
+                        flag = 1
+                        break
+                player = game[list_title[teammembers]][team2]
+                for k in Total_student_dictionary[player]:
+                    if k[1] > slot[0] and k[0] < slot[1]:
+                        flag = 1
+                        break
+                
+            if flag == 1:
+                continue
+
+            for teammembers in range((list_teammebers[game_number])):
+                player = game[list_title[teammembers]][team1]
+                Total_student_dictionary[player].append(slot)
+                player = game[list_title[teammembers]][team2]
+                Total_student_dictionary[player].append(slot)
+            print(game["Team Name"][team1], "vs", game["Team Name"][team2], "at",end="")
+            print(slot)
+            time = (str(7+(int(slot[0])-int('0'))//60)+":"+str((int(slot[0])-int('0'))%60)+" to "+str(7+(int(slot[1])-int('0'))//60)+":"+str((int(slot[1])-int('0'))%60))
+            df.loc[len(df.index)] = [game["Team Name"][team1],game["Team Leader Name"][team1],"vs",game["Team Leader Name"][team2],game["Team Name"][team2],time,games_name[game_number]]
+            teamcheck[team1]=1
+            break
+
+df.to_excel(r"C:\Users\jaggi\Downloads\Hallabol'24\Schedule.xlsx", sheet_name='sheet1', index=False)
